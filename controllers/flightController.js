@@ -3,8 +3,12 @@ const { Flight } = require("./../models/Flight");
 require("../db/mongoose");
 
 const getFlights = async (req, res) => {
-  const flights = await Flight.find();
-  res.send(flights);
+  try {
+    const flights = await Flight.find();
+    res.send(flights);
+  } catch (err) {
+    res.status(500).send(error);
+  }
 };
 module.exports.getFlights = getFlights;
 
@@ -21,23 +25,26 @@ const searchFlights = async (req, res) => {
 module.exports.searchFlights = searchFlights;
 
 const postFlight = async (req, res) => {
-  const flight = new Flight({
-    ...req.body
-  });
-  res.status(200);
-  console.log(flight);
-  await flight.save(async function(err) {
-    if (err) {
-      console.log(err);
-    }
-  });
+  try {
+    const flight = new Flight({
+      ...req.body
+    }).save();
+    res.status(200);
+  } catch (err) {
+    res.status(500).send(error);
+  }
 };
 module.exports.postFlight = postFlight;
 
 const deleteFlight = async (req, res) => {
   const id = req.params.id;
-  const flight = await Flight.findByIdAndDelete({ _id: id });
-  const flights = await Flight.find();
-  res.send(flights);
+  try {
+    const flight = await Flight.findByIdAndDelete({ _id: id });
+    const flights = await Flight.find();
+    res.send(flights);
+  } catch (err) {
+    res.status(500).send(error);
+  }
 };
+
 module.exports.deleteFlight = deleteFlight;
