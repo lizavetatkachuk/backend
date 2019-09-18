@@ -40,10 +40,8 @@ const postFlight = async (req, res) => {
   try {
     const flight = await new Flight({
       ...req.body
-    }).save(err => {
-      if (err) res.status(500).send(err);
-      else res.status(201).send("Created sucsessfully");
-    });
+    }).save();
+    res.status(201).send("Created sucsessfully");
   } catch (err) {
     res.status(500).send(err);
   }
