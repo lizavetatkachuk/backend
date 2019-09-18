@@ -12,10 +12,8 @@ const postAirport = async (req, res) => {
   try {
     const airport = await new Airport({
       ...req.body
-    }).save(err => {
-      if (err) res.status(409).send("The airport already exists");
-      else res.status(201).send("Created sucsessfully");
-    });
+    }).save();
+    res.status(201).send("Created sucsessfully");
   } catch (err) {
     res.status(409).send("The airport already exists");
   }

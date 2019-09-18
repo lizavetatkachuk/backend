@@ -12,10 +12,8 @@ const registerController = async (req, res) => {
       password,
       name,
       role: "client"
-    }).save(err => {
-      if (err) res.status(406).send("Email already in use");
-      else res.status(201).send("Created sucsessfully");
-    });
+    }).save();
+    res.status(201).send("Created sucsessfully");
   } catch (err) {
     res.status(500).send(err);
   }

@@ -34,9 +34,7 @@ const postOrder = async (req, res) => {
     const order = await new Order({
       ...req.body
     });
-    order.save(err => {
-      if (err) res.status(501).send(err);
-    });
+    order.save();
 
     const updatedUser = await User.findOneAndUpdate(
       { _id: decoded.userId },

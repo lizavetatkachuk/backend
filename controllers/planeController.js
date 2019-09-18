@@ -27,12 +27,10 @@ const postPlane = async (req, res) => {
   try {
     const plane = new Plane({
       ...req.body
-    }).save(err => {
-      if (err) res.status(500).send("Plane credentials are not unique");
-      else res.status(201).send("Created sucsessfully");
-    });
+    }).save();
+    res.status(201).send("Created sucsessfully");
   } catch (err) {
-    res.status(500).send(err);
+    res.status(500).send("Plane credentials are not unique");
   }
 };
 module.exports.postPlane = postPlane;
