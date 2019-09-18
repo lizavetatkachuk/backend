@@ -12,10 +12,12 @@ const registerController = async (req, res) => {
       password,
       name,
       role: "client"
-    }).save();
-    res.send("");
+    }).save(err => {
+      res.status(406).send("Email already in use");
+    });
+    res.status(201).send("Created sucsessfully");
   } catch (err) {
-    res.status(409).send("Email already in use");
+    res.status(500).send(err);
   }
 };
 
@@ -29,12 +31,12 @@ const loginController = async (req, res) => {
       res.status(401).send("The user is not registered");
     } else {
       const msg = await compare(password, user.password);
-      if (msg === true) {
+      if (msg) {
         const token = jwt.sign(
           { userId: user._id.toString(), userRole: user.role },
           CONFIG.jwt_encryption
         );
-        res.send({ token, user: { name: user.name } });
+        res.status(200).send({ token, user: { name: user.name } });
       } else res.status(401).send("Wrong password");
     }
   } catch (err) {

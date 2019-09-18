@@ -8,11 +8,12 @@ require("../db/mongoose");
 const getOrders = async (req, res) => {
   const token = req.headers["authorization"];
   const decoded = jwt.verify(token, CONFIG.jwt_encryption);
+
   try {
     const user = await User.findById(decoded.userId)
       .populate({ path: "orders", populate: { path: "flight" } })
       .exec((err, result) => {
-        res.send(result);
+        res.status(200).send(result);
       });
   } catch (err) {
     res.status(500).send(err);
@@ -27,15 +28,21 @@ const postOrder = async (req, res) => {
 
   const decoded = jwt.verify(token, CONFIG.jwt_encryption);
   try {
-    const user = await User.findOne({ _id: decoded.userId }).save();
+    const user = await User.findOne({ _id: decoded.userId });
+    if (!user) res.status(401).send("Unauthorised");
   } catch (err) {
     res.status(401).send("Unauthorised");
   }
   try {
     const order = await new Order({
       ...req.body
-    }).save();
-  } catch (err) {}
+    }).save(err => {
+      res.status(501).send(err);
+    });
+  } catch (err) {
+    res.status(501).send("Wrong data");
+  }
+
   try {
     const updatedUser = await User.findOneAndUpdate(
       { _id: decoded.userId },
@@ -47,6 +54,7 @@ const postOrder = async (req, res) => {
       { $push: { booked: seats } },
       { new: true }
     );
+    res.status(201).send("Created sucsessfully");
   } catch (err) {
     res.status(520).send("Failed to book");
   }
