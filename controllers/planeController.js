@@ -12,14 +12,25 @@ const getPlanes = async (req, res) => {
 };
 module.exports.getPlanes = getPlanes;
 
+const getPlane = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const plane = await Plane.findOne({ key: id });
+    res.status(200).send(plane);
+  } catch (err) {
+    res.status(500).send(err);
+  }
+};
+module.exports.getPlane = getPlane;
+
 const postPlane = async (req, res) => {
   try {
     const plane = new Plane({
       ...req.body
     }).save(err => {
-      res.status(500).send("Plane credentials are not unique");
+      if (err) res.status(500).send("Plane credentials are not unique");
+      else res.status(201).send("Created sucsessfully");
     });
-    res.status(201).send("Created sucsessfully");
   } catch (err) {
     res.status(500).send(err);
   }

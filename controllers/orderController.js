@@ -30,33 +30,30 @@ const postOrder = async (req, res) => {
   try {
     const user = await User.findOne({ _id: decoded.userId });
     if (!user) res.status(401).send("Unauthorised");
-  } catch (err) {
-    res.status(401).send("Unauthorised");
-  }
-  try {
+
     const order = await new Order({
       ...req.body
-    }).save(err => {
-      res.status(501).send(err);
     });
-  } catch (err) {
-    res.status(501).send("Wrong data");
-  }
+    order.save(err => {
+      if (err) res.status(501).send(err);
+    });
 
-  try {
     const updatedUser = await User.findOneAndUpdate(
       { _id: decoded.userId },
       { $push: { orders: order._id } },
       { new: true }
     );
+    if (!updatedUser) res.status(520).send("Failed update user info");
     const updatedFlight = await Flight.findOneAndUpdate(
       { _id: req.body.flight },
       { $push: { booked: seats } },
       { new: true }
     );
-    res.status(201).send("Created sucsessfully");
+    if (updatedFlight && updatedUser)
+      res.status(201).send("Created sucsessfully");
+    else res.status(520).send("Failed update seats in the flight");
   } catch (err) {
-    res.status(520).send("Failed to book");
+    res.status(500).send("Internal server error");
   }
 };
 

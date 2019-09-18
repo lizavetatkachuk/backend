@@ -1,5 +1,7 @@
 const jwt = require("jsonwebtoken");
 const { Flight } = require("./../models/Flight");
+const { Order } = require("./../models/Order");
+const { User } = require("./../models/User");
 require("../db/mongoose");
 
 const getFlights = async (req, res) => {
@@ -7,32 +9,43 @@ const getFlights = async (req, res) => {
     const flights = await Flight.find();
     res.status(200).send(flights);
   } catch (err) {
-    res.status(500).send(error);
+    res.status(500).send(err);
   }
 };
 module.exports.getFlights = getFlights;
+
+const getFlight = async (req, res) => {
+  const id = req.params.id;
+  try {
+    const flight = await Flight.findById(id);
+    res.status(200).send(flight);
+  } catch (err) {
+    res.status(500).send(err);
+  }
+};
+module.exports.getFlight = getFlight;
 
 const searchFlights = async (req, res) => {
   const { from, to, there } = req.body;
   try {
     const flights = await Flight.find({ from, to, time: there });
-    res.status(201).send(flights);
+    res.status(200).send(flights);
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).send(err);
   }
 };
 module.exports.searchFlights = searchFlights;
 
 const postFlight = async (req, res) => {
   try {
-    const flight = new Flight({
+    const flight = await new Flight({
       ...req.body
     }).save(err => {
-      res.status(500).send(error);
+      if (err) res.status(500).send(err);
+      else res.status(201).send("Created sucsessfully");
     });
-    res.status(200).send("Created sucsessfully");
   } catch (err) {
-    res.status(500).send(error);
+    res.status(500).send(err);
   }
 };
 module.exports.postFlight = postFlight;
@@ -41,9 +54,18 @@ const deleteFlight = async (req, res) => {
   const id = req.params.id;
   try {
     const flight = await Flight.findByIdAndDelete({ _id: id });
+    const orders = await Order.deleteMany({ flight: flight._id });
+    if (orders.length > 0) {
+      orders.forEach(async order => {
+        const userOrders = await User.updateMany(
+          { orders: { $in: order._id } },
+          { $pull: { orders: order._id } }
+        );
+      });
+    }
     res.status(204).send("Deleted sucsessfully");
   } catch (err) {
-    res.status(500).send(error);
+    res.status(500).send(err);
   }
 };
 

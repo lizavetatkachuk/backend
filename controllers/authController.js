@@ -7,15 +7,15 @@ require("../db/mongoose");
 const registerController = async (req, res) => {
   const { email, password, name } = req.body;
   try {
-    const user = new User({
+    const user = await new User({
       email,
       password,
       name,
       role: "client"
     }).save(err => {
-      res.status(406).send("Email already in use");
+      if (err) res.status(406).send("Email already in use");
+      else res.status(201).send("Created sucsessfully");
     });
-    res.status(201).send("Created sucsessfully");
   } catch (err) {
     res.status(500).send(err);
   }
