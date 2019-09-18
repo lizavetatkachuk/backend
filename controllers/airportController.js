@@ -24,7 +24,7 @@ const deleteAirport = async (req, res) => {
   const code = req.params.id;
   try {
     const airport = await Airport.findOneAndDelete({ code });
-    res.status(200).send("Deleted sucsessfully");
+    res.status(204).send("Deleted sucsessfully");
   } catch (err) {
     res.status(500).send("Internal server error");
   }
