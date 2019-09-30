@@ -23,6 +23,27 @@ module.exports = async socket => {
     }
   });
 
+  socket.on("seat:outdated", async data => {
+    const decoded = jwt.verify(data.token, CONFIG.jwt_encryption);
+    try {
+      const user = await User.findById(decoded.userId);
+
+      const now = moment();
+      const seats = await Seats.find({ user, flight: data.flight });
+      const currentSeats = seats.map(async seat => {
+        if (
+          moment(seat.date)
+            .add(10, "minutes")
+            .isAfter(now) === false
+        ) {
+          const outdated = await Seats.findByIdAndDelete(seat._id);
+        }
+      });
+    } catch (error) {
+      socket.emit("seat:outdated:error");
+    }
+  });
+
   socket.on("seat:choose", async data => {
     const decoded = jwt.verify(data.token, CONFIG.jwt_encryption);
     try {
@@ -30,16 +51,16 @@ module.exports = async socket => {
       const now = moment();
       if (!user) socket.emit("auth:error");
       else {
-        const seats = await new Seats({
+        const seat = await new Seats({
           flight: data.flight,
           user: user,
           seat: data.seat,
           date: now
         });
-        seats.save();
+        seat.save();
         socket.broadcast
           .to("seat booking room")
-          .emit("seat:frozen", { seat: seats.seat });
+          .emit("seat:frozen", { seat: seat.seat });
       }
     } catch (err) {
       socket.emit("seat:choose:error");
