@@ -3,12 +3,19 @@ const express = require("express");
 const logger = require("morgan");
 const CONFIG = require("./config/index");
 
+const io = require("socket.io")();
+
 const flightRouter = require("./routes/flight");
 const authRouter = require("./routes/auth");
 const orderRouter = require("./routes/order");
 const adminRouter = require("./routes/admin");
 
+const socket = require("./socket/socket");
+
 const app = express();
+
+io.listen("8000");
+io.on("connection", socket);
 
 app.use(logger("dev"));
 app.use(express.json());
