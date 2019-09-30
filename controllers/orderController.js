@@ -6,11 +6,8 @@ const CONFIG = require("../config/index");
 require("../db/mongoose");
 
 const getOrders = async (req, res) => {
-  const token = req.headers["authorization"];
-  const decoded = jwt.verify(token, CONFIG.jwt_encryption);
-
   try {
-    const user = await User.findById(decoded.userId)
+    const user = await User.findById(req.user)
       .populate({ path: "orders", populate: { path: "flight" } })
       .exec((err, result) => {
         res.status(200).send(result);

@@ -1,6 +1,7 @@
 require("../db/mongoose");
 const jwt = require("jsonwebtoken");
 const moment = require("moment");
+const { removeOutdated } = require("./../helpers/socketHelper");
 const { Seats } = require("../models/Seats");
 const { User } = require("../models/User");
 const CONFIG = require("../config/index");
@@ -23,22 +24,20 @@ module.exports = async socket => {
     }
   });
 
+  socket.on("disconnect", async () => {
+    try {
+      const currentSeats = removeOutdated();
+      socket.emit("seats:found", { seats: currentSeats });
+    } catch (err) {
+      socket.emit("seats:notfound:error");
+    }
+  });
+
   socket.on("seat:outdated", async data => {
     const decoded = jwt.verify(data.token, CONFIG.jwt_encryption);
     try {
-      const user = await User.findById(decoded.userId);
-
-      const now = moment();
-      const seats = await Seats.find({ user, flight: data.flight });
-      const currentSeats = seats.map(async seat => {
-        if (
-          moment(seat.date)
-            .add(10, "minutes")
-            .isAfter(now) === false
-        ) {
-          const outdated = await Seats.findByIdAndDelete(seat._id);
-        }
-      });
+      const currentSeats = removeOutdated();
+      socket.emit("seats:found", { seats: currentSeats });
     } catch (error) {
       socket.emit("seat:outdated:error");
     }

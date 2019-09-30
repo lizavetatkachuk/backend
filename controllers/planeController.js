@@ -1,4 +1,3 @@
-const jwt = require("jsonwebtoken");
 const { Plane } = require("./../models/Plane");
 require("../db/mongoose");
 
