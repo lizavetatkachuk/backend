@@ -34,9 +34,8 @@ module.exports = async socket => {
   });
 
   socket.on("seat:outdated", async data => {
-    const decoded = jwt.verify(data.token, CONFIG.jwt_encryption);
     try {
-      const currentSeats = removeOutdated();
+      const currentSeats = removeOutdated(data);
       socket.emit("seats:found", { seats: currentSeats });
     } catch (error) {
       socket.emit("seat:outdated:error");
