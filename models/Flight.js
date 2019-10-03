@@ -1,13 +1,15 @@
 const mongoose = require("mongoose");
+const { Schema } = mongoose;
 
 const FlightSchema = new mongoose.Schema({
   from: {
-    trim: true,
-    type: String,
+    type: Schema.Types.ObjectId,
+    ref: "Airport",
     required: true
   },
   to: {
-    type: String,
+    type: Schema.Types.ObjectId,
+    ref: "Airport",
     required: true
   },
   time: {

@@ -6,7 +6,9 @@ require("../db/mongoose");
 
 const getFlights = async (req, res) => {
   try {
-    const flights = await Flight.find();
+    const flights = await Flight.find()
+      .populate({ path: "from" })
+      .populate({ path: "to" });
     res.status(200).send(flights);
   } catch (err) {
     res.status(500).send(err);
@@ -17,7 +19,9 @@ module.exports.getFlights = getFlights;
 const getFlight = async (req, res) => {
   const id = req.params.id;
   try {
-    const flight = await Flight.findById(id);
+    const flight = await Flight.findById(id)
+      .populate({ path: "from" })
+      .populate({ path: "to" });
     res.status(200).send(flight);
   } catch (err) {
     res.status(500).send(err);
@@ -43,8 +47,12 @@ module.exports.editFlight = editFlight;
 
 const searchFlights = async (req, res) => {
   const { from, to, there } = req.body;
+  console.log(req.body);
   try {
-    const flights = await Flight.find({ from, to, time: there });
+    const flights = await Flight.find({ time: there })
+      .populate({ path: "from", match: { _id: from } })
+      .populate({ path: "to", match: { _id: to } });
+    console.log(flights);
     res.status(200).send(flights);
   } catch (error) {
     res.status(500).send(err);
