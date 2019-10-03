@@ -8,6 +8,18 @@ const getAirports = async (req, res) => {
 };
 module.exports.getAirports = getAirports;
 
+const editAirport = async (req, res) => {
+  try {
+    const airport = await Airport.findOneAndUpdate({
+      ...req.body
+    });
+    res.status(201).send("Updated sucsessfully");
+  } catch (err) {
+    res.status(409).send("The airport doesn't exist");
+  }
+};
+module.exports.editAirport = editAirport;
+
 const postAirport = async (req, res) => {
   try {
     const airport = await new Airport({

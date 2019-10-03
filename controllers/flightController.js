@@ -25,6 +25,22 @@ const getFlight = async (req, res) => {
 };
 module.exports.getFlight = getFlight;
 
+const editFlight = async (req, res) => {
+  try {
+    const flight = await Flight.findOneAndUpdate(
+      {
+        _id: req.body._id
+      },
+      { ...req.body },
+      { new: true }
+    );
+    res.status(201).send("Updated sucsessfully");
+  } catch (err) {
+    res.status(409).send("The flight doesn't exist");
+  }
+};
+module.exports.editFlight = editFlight;
+
 const searchFlights = async (req, res) => {
   const { from, to, there } = req.body;
   try {

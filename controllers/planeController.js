@@ -22,9 +22,25 @@ const getPlane = async (req, res) => {
 };
 module.exports.getPlane = getPlane;
 
+const editPlane = async (req, res) => {
+  try {
+    const plane = await Plane.findOneAndUpdate(
+      {
+        key: req.body.key
+      },
+      { ...req.body },
+      { new: true }
+    );
+    res.status(201).send("Updated sucsessfully");
+  } catch (err) {
+    res.status(409).send("The plane doesn't exist");
+  }
+};
+module.exports.editPlane = editPlane;
+
 const postPlane = async (req, res) => {
   try {
-    const plane = new Plane({
+    const plane = await new Plane({
       ...req.body
     }).save();
     res.status(201).send("Created sucsessfully");
