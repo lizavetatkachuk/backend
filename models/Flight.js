@@ -25,7 +25,8 @@ const FlightSchema = new mongoose.Schema({
     required: true
   },
   plane: {
-    type: String,
+    type: Schema.Types.ObjectId,
+    ref: "Plane",
     required: true
   },
   booked: [

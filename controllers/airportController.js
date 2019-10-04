@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const { Airport } = require("../models/Airport");
+const { Flight } = require("../models/Flight");
 require("../db/mongoose");
 
 const getAirports = async (req, res) => {
@@ -9,10 +10,13 @@ const getAirports = async (req, res) => {
 module.exports.getAirports = getAirports;
 
 const editAirport = async (req, res) => {
+  const { name, code, _id } = req.body;
   try {
-    const airport = await Airport.findOneAndUpdate({
-      ...req.body
-    });
+    const airport = await Airport.findByIdAndUpdate(
+      _id,
+      { name, code },
+      { upsert: false }
+    );
     res.status(201).send("Updated sucsessfully");
   } catch (err) {
     res.status(409).send("The airport doesn't exist");
@@ -36,6 +40,9 @@ const deleteAirport = async (req, res) => {
   const code = req.params.id;
   try {
     const airport = await Airport.findOneAndDelete({ code });
+    const flights = await Flight.deleteMany({})
+      .populate({ path: "from", match: { _id: airport._id } })
+      .populate({ path: "to", match: { _id: airport._id } });
     res.status(204).send("Deleted sucsessfully");
   } catch (err) {
     res.status(500).send("Internal server error");

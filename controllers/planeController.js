@@ -1,4 +1,6 @@
 const { Plane } = require("./../models/Plane");
+const { User } = require("./../models/User");
+const { Flight } = require("./../models/Flight");
 require("../db/mongoose");
 
 const getPlanes = async (req, res) => {
@@ -52,8 +54,27 @@ module.exports.postPlane = postPlane;
 
 const deletePlane = async (req, res) => {
   const id = req.params.id;
+
   try {
     const plane = await Plane.findOneAndDelete({ key: id });
+    const flights = await Flight.find({}).populate({
+      path: "plane",
+      match: { _id: plane._id }
+    });
+
+    flights.forEach(async item => {
+      const flight = await Flight.findByIdAndDelete({ _id: item._id });
+      const orders = await Order.deleteMany({ flight: flight._id });
+
+      if (orders.length > 0) {
+        orders.forEach(async order => {
+          const userOrders = await User.updateMany(
+            { orders: { $in: order._id } },
+            { $pull: { orders: order._id } }
+          );
+        });
+      }
+    });
     res.status(204).send("Deleted sucsessfully");
   } catch (err) {
     res.status(500).send(err);

@@ -8,7 +8,14 @@ require("../db/mongoose");
 const getOrders = async (req, res) => {
   try {
     const user = await User.findById(req.user)
-      .populate({ path: "orders", populate: { path: "flight" } })
+      .populate({
+        path: "orders",
+        populate: { path: "flight", populate: { path: "from" } }
+      })
+      .populate({
+        path: "orders",
+        populate: { path: "flight", populate: { path: "to" } }
+      })
       .exec((err, result) => {
         res.status(200).send(result);
       });

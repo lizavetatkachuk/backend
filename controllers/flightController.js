@@ -8,7 +8,8 @@ const getFlights = async (req, res) => {
   try {
     const flights = await Flight.find()
       .populate({ path: "from" })
-      .populate({ path: "to" });
+      .populate({ path: "to" })
+      .populate({ path: "plane" });
     res.status(200).send(flights);
   } catch (err) {
     res.status(500).send(err);
@@ -21,7 +22,8 @@ const getFlight = async (req, res) => {
   try {
     const flight = await Flight.findById(id)
       .populate({ path: "from" })
-      .populate({ path: "to" });
+      .populate({ path: "to" })
+      .populate({ path: "plane" });
     res.status(200).send(flight);
   } catch (err) {
     res.status(500).send(err);
@@ -47,12 +49,10 @@ module.exports.editFlight = editFlight;
 
 const searchFlights = async (req, res) => {
   const { from, to, there } = req.body;
-  console.log(req.body);
   try {
     const flights = await Flight.find({ time: there })
       .populate({ path: "from", match: { _id: from } })
       .populate({ path: "to", match: { _id: to } });
-    console.log(flights);
     res.status(200).send(flights);
   } catch (error) {
     res.status(500).send(err);
