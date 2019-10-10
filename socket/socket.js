@@ -9,16 +9,19 @@ const CONFIG = require("../config/index");
 module.exports = async socket => {
   socket.join("seat booking room");
 
-  socket.on("connected", async () => {
+  socket.on("connected", async data => {
     try {
       const now = moment();
       const seats = await Seats.find();
+
       const currentSeats = seats.filter(seat => {
         return moment(seat.date)
           .add(15, "minutes")
           .isAfter(now);
       });
-      socket.emit("seats:found", { seats: currentSeats });
+      socket.emit("seats:found", {
+        seats: currentSeats
+      });
     } catch (err) {
       socket.emit("seats:notfound:error");
     }
@@ -27,7 +30,9 @@ module.exports = async socket => {
   socket.on("disconnect", async () => {
     try {
       const currentSeats = removeOutdated();
-      socket.emit("seats:found", { seats: currentSeats });
+      socket.broadcast
+        .to("seat booking room")
+        .emit("seats:found", { seats: currentSeats });
     } catch (err) {
       socket.emit("seats:notfound:error");
     }
@@ -59,6 +64,7 @@ module.exports = async socket => {
         socket.broadcast
           .to("seat booking room")
           .emit("seat:frozen", { seat: seat.seat });
+        socket.emit("seat:frozen", { seat: seat.seat });
       }
     } catch (err) {
       socket.emit("seat:choose:error");
